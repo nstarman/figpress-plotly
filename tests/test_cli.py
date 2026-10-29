@@ -1,6 +1,9 @@
-from conftest import EXAMPLE
+from pathlib import Path
 
 from figpress_plotly.cli import main
+
+ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE = ROOT / "examples" / "bands"
 
 
 def test_build_writes_the_pdf(tmp_path, capsys):

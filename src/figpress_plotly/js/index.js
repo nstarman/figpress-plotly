@@ -36,9 +36,13 @@ export function roundGeometry(layout) {
 
 const groupOf = (name) => (typeof name === "string" && name.startsWith("legend:") ? name.slice(7) : null);
 
-/** The figure as the reader left it: hidden groups' traces invisible, their legend entries dimmed. */
+/** A trace's group: its legendgroup, or the trace on its own. */
+export const traceGroup = (t, i) => t.legendgroup || `trace:${i}`;
+
+/** The figure as the reader left it: hidden groups' traces off (still in Plotly's legend, dimmed),
+ * their drawn legend entries dimmed. */
 export function applyState(figure, state) {
-  const data = figure.data.map((t) => (state.hidden.has(t.legendgroup) ? { ...t, visible: false } : t));
+  const data = figure.data.map((t, i) => (state.hidden.has(traceGroup(t, i)) ? { ...t, visible: "legendonly" } : t));
   const dim = (o) => (state.hidden.has(groupOf(o.name)) ? { ...o, opacity: DIM } : o);
   const layout = { ...figure.layout, shapes: (figure.layout.shapes ?? []).map(dim),
     annotations: (figure.layout.annotations ?? []).map(dim) };
@@ -65,6 +69,10 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
     return Plotly.react(el, scaleLayout(data, s), roundGeometry(scaleLayout(layout, s)), { displayModeBar: false, responsive: false });
   };
   await draw();
+  const toggle = (group) => { state.hidden.has(group) ? state.hidden.delete(group) : state.hidden.add(group); draw(); };
+  // Plotly's own legend: its clicks are the reader's state too, so a redraw keeps them.
+  el.on("plotly_legendclick", (ev) => { toggle(traceGroup(base.data[ev.curveNumber], ev.curveNumber)); return false; });
+  el.on("plotly_legenddoubleclick", () => false);
   let pending;
   new ResizeObserver(() => { clearTimeout(pending); pending = setTimeout(draw, 50); }).observe(el);
   // A legend entry's label toggles its group (its traces; its handle and label dim).
@@ -72,9 +80,7 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
     const g = e.target.closest(".annotation");
     const ann = g && el.layout.annotations[+g.dataset.index];
     const group = ann && groupOf(ann.name);
-    if (!group) return;
-    state.hidden.has(group) ? state.hidden.delete(group) : state.hidden.add(group);
-    draw();
+    if (group) toggle(group);
   });
   return { state, draw };
 }

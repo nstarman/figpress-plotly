@@ -98,8 +98,11 @@ def _math(toks, i, end, upright, script, out):
             upright = True  # {\rm …}
             i += 1
             continue
-        if t in ("_", "^"):
-            raise ValueError(f"{t} without a base in math")
+        if t in ("_", "^"):  # no base in the math: it is the text before (`km s$^{-1}$`)
+            if script is not None:
+                raise ValueError("nested scripts are not supported")
+            i = _atom(toks, i + 1, upright, "sub" if t == "_" else "sup", out)
+            continue
         i = _atom(toks, i, upright, script, out)
         while i < end and toks[i] in ("_", "^"):
             if script is not None:

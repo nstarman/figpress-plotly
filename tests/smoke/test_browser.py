@@ -7,7 +7,7 @@ import pytest
 pytestmark = pytest.mark.smoke
 
 GROUP_VISIBLE = """g => document.getElementById('figure').data
-  .filter(t => t.legendgroup === g).map(t => t.visible === false ? 'hidden' : 'shown')"""
+  .filter(t => t.legendgroup === g).map(t => t.visible === 'legendonly' ? 'hidden' : 'shown')"""
 ENTRY_OPACITY = """g => document.getElementById('figure').layout.annotations
   .find(a => a.name === 'legend:' + g).opacity ?? 1"""
 
@@ -65,3 +65,21 @@ def test_the_single_file_works_from_disk(open_page, example):
     assert not page.errors, page.errors
     assert {re.match(r"\w+:", u).group(0) for u in page.requests} <= {"file:", "data:"}
     assert page.evaluate("document.fonts.check('8px fp-text')")
+
+
+def test_plotly_legend_clicks_survive_resize(open_page, server):
+    """The native example uses Plotly's own legend (US6)."""
+    page = open_page(width=500, url=f"{server}/rotation/index.html")
+    state = "n => document.getElementById('figure').data.find(t => t.name === n).visible ?? true"
+    box = page.evaluate("""() => {
+      for (const g of document.querySelectorAll('#figure .legend .traces'))
+        if (g.textContent.trim() === 'Disk') { const r = g.querySelector('.legendtoggle').getBoundingClientRect();
+          return [r.x + r.width / 2, r.y + r.height / 2]; }
+    }""")
+    page.mouse.click(*box)
+    page.wait_for_function(f"({state})('Disk') === 'legendonly'")
+    assert page.evaluate(state, "Halo") is True
+    width = page.evaluate("document.getElementById('figure')._fullLayout.width")
+    page.set_viewport_size({"width": 400, "height": 900})
+    page.wait_for_function(f"document.getElementById('figure')._fullLayout.width < {width}")
+    assert page.evaluate(state, "Disk") == "legendonly"

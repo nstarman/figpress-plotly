@@ -2,7 +2,6 @@
 
 import functools
 import http.server
-import sys
 import threading
 from pathlib import Path
 
@@ -13,13 +12,14 @@ EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "bands"
 
 @pytest.fixture(scope="session")
 def example(tmp_path_factory):
-    sys.path.insert(0, str(EXAMPLE))
-    import figure
+    from figpress_plotly.cli import load
 
+    figure = load(f"{EXAMPLE / 'figure.py'}:bands")
     out = tmp_path_factory.mktemp("smoke")
-    figure.bands.write_pdf(out / "bands.pdf")
-    figure.bands.write_web(out / "bands", single_file=out / "bands.html")
-    return out, figure.bands
+    figure.write_pdf(out / "bands.pdf")
+    figure.write_web(out / "bands", single_file=out / "bands.html")
+    load(f"{EXAMPLE.parent / 'native' / 'figure.py'}:rotation").write_web(out / "rotation")
+    return out, figure
 
 
 @pytest.fixture(scope="session")

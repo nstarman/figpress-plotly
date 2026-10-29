@@ -1,8 +1,11 @@
 """The example's print figure matches its matplotlib reference within 1 pt (SC-001)."""
 
-from conftest import EXAMPLE
+from pathlib import Path
 
 from figpress_plotly import compare
+
+ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE = ROOT / "examples" / "bands"
 
 
 def test_matches_the_reference(example_pdf, tmp_path):

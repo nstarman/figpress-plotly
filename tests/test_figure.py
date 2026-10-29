@@ -56,3 +56,12 @@ def test_decorator():
     def f(target):
         return go.Figure()
     assert f.name == "f" and f("pdf").layout.width == pytest.approx(100 * 4 / 3)
+
+
+def test_margins_instead_of_a_frame():
+    f = Figure(lambda target: go.Figure(), page=(200, 100), margins=(30, 10, 10, 20), fonts=FONTS, spine=0)
+    assert f.frame == (30, 10, 160, 70)
+    with pytest.raises(ValueError, match="not both"):
+        Figure(lambda target: go.Figure(), page=(200, 100), frame=(30, 10, 160, 70), margins=(1, 1, 1, 1), fonts=FONTS)
+    with pytest.raises(ValueError, match="margins or a style"):
+        Figure(lambda target: go.Figure(), page=(200, 100), fonts=FONTS)

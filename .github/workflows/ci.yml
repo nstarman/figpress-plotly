@@ -27,6 +27,7 @@ jobs:
         run: |
           uv run figpress-plotly build examples/bands/figure.py:bands --out build/
           uv run figpress-plotly compare build/bands.pdf examples/bands/reference.pdf --tol 1 --overlay build/overlay.png
+          uv run figpress-plotly build examples/native/figure.py:rotation --out build/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

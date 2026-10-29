@@ -14,6 +14,10 @@ def test_runs_follow_mathtext():
     assert runs(r"$-\mathrm{SI} \in \Gamma$") == [("−SI\u2005∈\u2005Γ", "math_upright", None)]
 
 
+def test_a_script_on_the_text_before():
+    assert runs(r"km s$^{-1}$") == [("km s", "text", None), ("−1", "math_upright", "sup")]
+
+
 def test_tex_is_plotly_markup_in_the_paper_fonts():
     assert tex(r"a $p_{\rm A}$ & b") == ('a <span style="font-family:fp-math-it">p</span>'
                                           '<sub><span style="font-family:fp-math-rm">A</span></sub> &amp; b')

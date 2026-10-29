@@ -65,8 +65,21 @@ class Control:
 class Figure:
     """A paper figure: `build(target, **params)` gives it for print (`"pdf"`) or the web (`"web"`)."""
 
-    def __init__(self, fn, *, page, frame, fonts, controls=(), name=None, spine=0.7):
+    def __init__(self, fn, *, page, frame=None, margins=None, fonts=None, style=None, controls=(), name=None,
+                 spine=None):
         w, h = page
+        if frame is not None and margins is not None:
+            raise ValueError("give the frame or the margins, not both")
+        if frame is None:
+            margins = margins if margins is not None else style.margins if style else None
+            if margins is None:
+                raise ValueError("give the frame, the margins or a style (whose margins are used)")
+            ml, mt, mr, mb = margins
+            frame = (ml, mt, w - ml - mr, h - mt - mb)
+        fonts = fonts or (style.fonts if style else None)
+        if fonts is None:
+            raise ValueError("give the fonts, or a style that has them")
+        spine = spine if spine is not None else style.spine if style else 0.7
         left, top, fw, fh = frame
         if min(w, h, fw, fh) <= 0 or left < 0 or top < 0 or left + fw > w or top + fh > h:
             raise ValueError(f"frame {frame} must lie inside the page {page} (pt)")
@@ -74,7 +87,7 @@ class Figure:
         for c in controls:
             if c.name not in params:
                 raise ValueError(f"control {c.name!r} is not a parameter of {fn.__name__}()")
-        self.fn, self.page, self.frame, self.fonts = fn, (w, h), tuple(frame), fonts
+        self.fn, self.page, self.frame, self.fonts, self.style = fn, (w, h), tuple(frame), fonts, style
         self.controls, self.name = tuple(controls), name or fn.__name__
         # The frame is where the paper's spines are (matplotlib centres them on the axes' edge);
         # Plotly draws axis lines just outside its plot area, so that is inset by half a line.
@@ -90,6 +103,8 @@ class Figure:
             fig = self.fn(target, **params)
         finally:
             _current.reset(token)
+        if self.style is not None:
+            fig.update_layout(template=self.style.template)  # defaults: the figure's own settings win
         w, h = self.page
         left, top, pw, ph = self.plot
         fig.update_layout(
@@ -116,7 +131,10 @@ class Figure:
         return self.build(target, **params)
 
 
-def figure(*, page, frame, fonts: Fonts, controls=(), name=None, spine=0.7):
-    """Decorate `build(target, **params)` with its page and frame (pt), fonts and controls. `spine`
-    is the frame's line width (pt)."""
-    return lambda fn: Figure(fn, page=page, frame=frame, fonts=fonts, controls=controls, name=name, spine=spine)
+def figure(*, page, frame=None, margins=None, fonts: Fonts | None = None, style=None, controls=(), name=None,
+           spine=None):
+    """Decorate `build(target, **params)` with its page (pt) and either its exact frame (left, top,
+    width, height) or its margins (left, top, right, bottom), its fonts, its paper `style` (which
+    supplies fonts, margins and the frame's line width `spine` unless given) and its controls."""
+    return lambda fn: Figure(fn, page=page, frame=frame, margins=margins, fonts=fonts, style=style,
+                             controls=controls, name=name, spine=spine)

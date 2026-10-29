@@ -78,6 +78,19 @@ checked in CI). Each story's tests come first and fail before its implementation
       request to another host; the page at ½×, 1× and 2× the print width overlays the scaled PDF
       within 1 pt (SC-002, SC-005)
 
+## Phase 5b: User Story 6 — native figures (P1)
+
+- [x] T038 [US6] `fp.figure`: `margins=` as an alternative to `frame=`; `fonts`, `spine` and margins
+      default from a style; tests in `tests/test_figure.py`
+- [x] T039 [US6] `fp.Style` (`src/figpress_plotly/style.py`): fonts, sizes, ticks, line widths and
+      margins in pt, as a Plotly template the figure's own settings override; tests in
+      `tests/test_style.py`
+- [x] T040 [US6] Runtime: Plotly legend clicks become reader state (kept across redraws); runtime test
+- [x] T041 [US6] `examples/native/figure.py`: a new figure in a Times-like font (STIX), with margins,
+      the style, error bars, a band and Plotly's legend — no reference
+- [x] T042 [US6] Tests: the native PDF (page, only the style's fonts, plot area from the margins) in
+      `tests/test_native.py`; smoke: its legend click survives a resize
+
 ## Phase 6: User Story 3 — controls (P2)
 
 - [ ] T027 [P] [US3] Tests for the difference finder: only differing leaves are recorded, values

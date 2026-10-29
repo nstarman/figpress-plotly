@@ -1,22 +1,23 @@
+from pathlib import Path
 import json
 import re
 
 import pytest
 from plotly.offline import get_plotlyjs_version
 
-from conftest import EXAMPLE
 from figpress_plotly import __version__
+
+ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE = ROOT / "examples" / "bands"
 
 
 @pytest.fixture(scope="module")
 def built(tmp_path_factory):
-    import sys
+    from figpress_plotly.cli import load
 
-    sys.path.insert(0, str(EXAMPLE))
-    import figure
-
+    figure = load(f"{EXAMPLE / 'figure.py'}:bands")
     out = tmp_path_factory.mktemp("web")
-    figure.bands.write_web(out / "bands", single_file=out / "bands.html")
+    figure.write_web(out / "bands", single_file=out / "bands.html")
     return out
 
 

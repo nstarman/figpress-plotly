@@ -131,6 +131,32 @@ theme, series colours are unchanged; switching the theme back restores the print
    (background, black and grey text, axes, grid) take the dark theme's and its data colours do not
    change.
 
+### User Story 6 - A new figure, native from the start (Priority: P1)
+
+An author makes a new figure for a paper directly with figpress-plotly: there is no matplotlib
+figure to match. They give the page and the margins for the labels (not an exact frame), set the
+paper's look once in a style shared by all its figures (fonts, sizes, ticks, line widths), and
+write each figure as plain Plotly, overriding the style where a figure needs to. The PDF goes into
+the paper; the web figure, with Plotly's own legend if they like, goes on its site.
+
+**Why this priority**: most figures from now on are new; porting is the exception.
+
+**Independent Test**: the native example builds both targets with no reference and no matplotlib
+code of its own; its PDF embeds only the style's fonts; its plot area follows the margins; a
+setting made in the figure wins over the style's; clicking its Plotly legend hides a series, and a
+resize keeps it hidden.
+
+**Acceptance Scenarios**:
+
+1. **Given** a page and margins, **When** the figure is built, **Then** the plot area is the page
+   less the margins.
+2. **Given** a paper style, **When** several figures use it, **Then** each gets its fonts, sizes,
+   ticks and line widths without repeating them, and any setting a figure makes itself wins.
+3. **Given** a figure using Plotly's own legend, **When** the reader clicks an entry on the web,
+   **Then** that series hides and stays hidden across redraws.
+
+---
+
 ### Edge Cases
 
 - A column narrower than half the print width: the figure still scales as a whole (no reflow);
@@ -175,6 +201,11 @@ theme, series colours are unchanged; switching the theme back restores the print
   arrows, one control), built and checked in CI for both targets.
 - **FR-014**: The browser runtime MUST be one package (`@nstarkman/figpress-plotly`) shared by every
   figure, vendored into each built page at its exact version.
+- **FR-015**: A figure MUST accept either an exact frame or margins (pt); and a paper style that
+  holds its fonts, text sizes, tick and line settings and default margins, applied to every figure
+  that names it as defaults the figure's own settings override.
+- **FR-016**: On the web, clicks on Plotly's own legend MUST be part of the reader's state (kept
+  across redraws), like the drawn legend's.
 
 ### Key Entities
 
@@ -201,6 +232,8 @@ theme, series colours are unchanged; switching the theme back restores the print
 - **SC-004**: A figure with a control is written with no browser code by its author.
 - **SC-005**: Built web pages make no network request to another host (checked in CI).
 - **SC-006**: Building the example for both targets takes under 30 seconds on CI.
+- **SC-007**: A native example (no reference figure) builds for both targets and is checked in CI
+  for its page, fonts, margins, style and legend.
 
 ## Assumptions
 

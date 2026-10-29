@@ -1,7 +1,7 @@
 // The runtime's pure functions: scaling and the reader's state.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyState, fitScale, roundGeometry, scaleLayout } from "../src/figpress_plotly/js/index.js";
+import { applyState, fitScale, roundGeometry, scaleLayout, traceGroup } from "../src/figpress_plotly/js/index.js";
 
 test("pixel settings scale; data and other numbers do not", () => {
   const layout = { width: 300, margin: { l: 40, t: 2, pad: 0 }, font: { size: 10 }, xaxis: { range: [-3, -1], ticklen: 4,
@@ -29,7 +29,7 @@ test("a hidden group: its traces invisible, its legend entry dimmed, the rest un
   const fig = { data: [{ legendgroup: "s1" }, { legendgroup: "s2" }],
     layout: { shapes: [{ name: "legend:s1" }, { name: "other" }], annotations: [{ name: "legend:s1" }, { name: "legend:s2" }] } };
   const { data, layout } = applyState(fig, { hidden: new Set(["s1"]) });
-  assert.equal(data[0].visible, false);
+  assert.equal(data[0].visible, "legendonly");
   assert.equal(data[1].visible, undefined);
   assert.equal(layout.shapes[0].opacity, 0.35);
   assert.equal(layout.shapes[1].opacity, undefined);
@@ -47,4 +47,11 @@ test("the plot area's edges are rounded, not each margin", () => {
   const g = roundGeometry({ width: 163.2, height: 136.8, margin: { l: 22.9, r: 6.9, t: 2.9, b: 19.4, pad: 0 } });
   assert.deepEqual([g.width, g.margin.l, g.margin.r], [163, 23, 7]);
   assert.deepEqual([g.height, g.margin.t, g.margin.b], [137, 3, 20]);
+});
+
+test("a trace without a legendgroup is its own group", () => {
+  assert.equal(traceGroup({ legendgroup: "s1" }, 4), "s1");
+  assert.equal(traceGroup({ name: "data" }, 4), "trace:4");
+  const { data } = applyState({ data: [{ name: "a" }, { name: "b" }], layout: {} }, { hidden: new Set(["trace:1"]) });
+  assert.deepEqual(data.map((t) => t.visible), [undefined, "legendonly"]);
 });
