@@ -136,8 +136,8 @@ def _texts(new_chars, ref_chars, tol) -> list[Element]:
     return out
 
 
-def _lines(img: np.ndarray) -> dict[str, float]:
-    """The frame: the outermost long straight dark lines (continuous over half the page), in pt."""
+def _lines(img: np.ndarray, px_per_pt: float = DPI / 72) -> dict[str, float]:
+    """The frame: the outermost long straight dark lines (continuous over half the image), in pt."""
     dark = img < 100
     found = {}
     for axis, (lo, hi) in ((0, ("left", "right")), (1, ("top", "bottom"))):
@@ -145,8 +145,8 @@ def _lines(img: np.ndarray) -> dict[str, float]:
         idx = np.flatnonzero(runs > 0.5 * (dark.shape[0] if axis == 0 else dark.shape[1]))
         if idx.size:
             groups = np.split(idx, np.flatnonzero(np.diff(idx) > 1) + 1)
-            found[lo] = groups[0].mean() * 72 / DPI
-            found[hi] = groups[-1].mean() * 72 / DPI
+            found[lo] = groups[0].mean() / px_per_pt
+            found[hi] = groups[-1].mean() / px_per_pt
     return found
 
 

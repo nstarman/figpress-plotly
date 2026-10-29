@@ -17,7 +17,7 @@ checked in CI). Each story's tests come first and fail before its implementation
       numpy; package data `js/*.js`; `uv lock`
 - [x] T002 `package.json`: export `./src/figpress_plotly/js/index.js`, `files` accordingly; delete
       the placeholder root `index.js`; update `tests/package.test.mjs`
-- [ ] T003 [P] CI (`.github/workflows/ci.yml`): `uv run pytest`, `node --test` (done), a `smoke` job
+- [x] T003 [P] CI (`.github/workflows/ci.yml`): `uv run pytest`, `node --test`, a `smoke` job
       (Playwright Chromium) and the example's build + compare; upload the example's outputs
 
 ## Phase 2: Foundational
@@ -65,15 +65,15 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 ## Phase 5: User Story 2 — the web, hover and toggles (P1)
 
-- [ ] T022 [P] [US2] Runtime tests (pure functions): `scaleLayout` (pixel keys, dashes, rounding of
+- [x] T022 [P] [US2] Runtime tests (pure functions): `scaleLayout` (pixel keys, dashes, rounding of
       `ticklabelstandoff`), `applyState` (hidden groups on traces, shapes, annotations; legend
       entries dim), in `tests/runtime.test.mjs`
-- [ ] T023 [US2] `src/figpress_plotly/js/index.js`: `mount`, font loading, scaling to the
+- [x] T023 [US2] `src/figpress_plotly/js/index.js`: `mount`, font loading, scaling to the
       container, state, hover, group toggles by event delegation on legend entries, resize (R7)
-- [ ] T024 [US2] Tests for the page writer: folder layout, `figure.json`, vendored Plotly and
+- [x] T024 [US2] Tests for the page writer: folder layout, `figure.json`, vendored Plotly and
       runtime at their versions, the single file has no external URL, in `tests/test_web.py`
-- [ ] T025 [US2] `src/figpress_plotly/web.py` and `Figure.write_web` (contracts/web-page.md)
-- [ ] T026 [US2] Smoke tests (Playwright, Chromium), `tests/smoke/test_web.py`: hover shows the
+- [x] T025 [US2] `src/figpress_plotly/web.py` and `Figure.write_web` (contracts/web-page.md)
+- [x] T026 [US2] Smoke tests (Playwright, Chromium), `tests/smoke/test_browser.py` and `test_overlay.py`: hover shows the
       declared values; a legend click hides the group and dims the entry; resize keeps it; no
       request to another host; the page at ½×, 1× and 2× the print width overlays the scaled PDF
       within 1 pt (SC-002, SC-005)

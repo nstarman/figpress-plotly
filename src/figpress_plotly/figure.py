@@ -107,6 +107,11 @@ class Figure:
 
         return write_pdf(self.build("pdf", **params), Path(path), self.page, self.fonts)
 
+    def write_web(self, out, single_file=None, **params) -> Path:
+        from .web import write_web
+
+        return write_web(self, Path(out), single_file, **params)
+
     def __call__(self, target: str = "pdf", **params) -> go.Figure:
         return self.build(target, **params)
 

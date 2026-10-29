@@ -194,7 +194,8 @@ theme, series colours are unchanged; switching the theme back restores the print
 - **SC-001**: The example's PDF matches its reference within 1 pt for every compared element (frame,
   tick labels, axis labels, legend, annotations), as the comparison reports.
 - **SC-002**: At three column widths (half, equal to and twice the print width), the web figure
-  overlays the scaled PDF within 1 pt (scaled).
+  overlays the scaled PDF within 1 pt of the print figure, or 1¼ screen pixels where a pixel is
+  larger than that (at half width a pixel is 1.5 pt; browsers draw hairlines on whole pixels).
 - **SC-003**: One CP1 figure (Paper Figure 7) is ported: its PDF passes the comparison with the
   paper's current figure, and its web figure has hover, legend toggles and the η control.
 - **SC-004**: A figure with a control is written with no browser code by its author.
