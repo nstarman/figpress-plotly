@@ -71,11 +71,59 @@ export function formatValue(v, format) {
   return m ? v.toFixed(+m[1]) : String(v);
 }
 
+// The website's dark theme (nstarkman.space): its background and its text.
+export const DARK = { ground: "#0B0E14", ink: "#E5E9F0" };
+
+const rgbOf = (c) => {
+  const s = c.trim().toLowerCase();
+  if (s === "black") return [0, 0, 0, 1];
+  if (s === "white") return [255, 255, 255, 1];
+  let m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/.exec(s);
+  if (m) return [...m.slice(1).map((h) => parseInt(h, 16)), 1];
+  m = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(s);
+  return m ? [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]] : null;
+};
+
+/** In the dark theme, a neutral colour (a grey, black or white) at its place between the palette's
+ * text (black) and background (white); any other colour, and its alpha, unchanged. */
+export function darkNeutral(color, palette = DARK) {
+  const c = typeof color === "string" && rgbOf(color);
+  if (!c || !(c[0] === c[1] && c[1] === c[2])) return color;
+  const L = c[0] / 255, ink = rgbOf(palette.ink), ground = rgbOf(palette.ground);
+  const [r, g, b] = [0, 1, 2].map((k) => Math.round(ink[k] + (ground[k] - ink[k]) * L));
+  return c[3] === 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${c[3]})`;
+}
+
+/** The figure in the dark theme: every colour setting's neutrals mapped, and the backgrounds and
+ * text Plotly would otherwise default to light. */
+export function darken(v, palette = DARK, key = "") {
+  if (Array.isArray(v)) return v.map((x) => darken(x, palette, key));
+  if (v && typeof v === "object") {
+    if ("bdata" in v) return v;
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, darken(x, palette, k)]));
+  }
+  return key.endsWith("color") ? darkNeutral(v, palette) : v;
+}
+
+export function darkLayout(layout, palette = DARK) {
+  const l = darken(layout, palette);
+  return { ...l, paper_bgcolor: l.paper_bgcolor ?? palette.ground, plot_bgcolor: l.plot_bgcolor ?? palette.ground,
+    font: { ...l.font, color: l.font?.color ?? palette.ink } };
+}
+
+/** Dark or light: a `?theme=` on the page (an embedding site passes its own), else the document's
+ * `data-theme` (the website's toggle), else the system's. */
+export function isDark(doc = document, win = globalThis) {
+  const asked = new URLSearchParams(win.location?.search ?? "").get("theme") ?? doc.documentElement.dataset.theme;
+  if (asked === "dark" || asked === "light") return asked === "dark";
+  return !!win.matchMedia?.("(prefers-color-scheme: dark)").matches;
+}
+
 /** The scale that fits the print width into `width` px. */
 export const fitScale = (width, printWidth) => Math.min(MAX_SCALE, width / printWidth);
 
 /** Draw `spec` (a built figure's figure.json) into `el` and keep it interactive. */
-export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
+export async function mount(el, spec, { Plotly = globalThis.Plotly, palette = DARK } = {}) {
   const faces = Object.entries(spec.fonts).map(([family, src]) => new FontFace(family, `url(${src})`));
   faces.forEach((f) => document.fonts.add(f));
   await Promise.all(faces.map((f) => f.load()));
@@ -88,7 +136,10 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
   const printWidth = base.layout.width;
   const draw = () => {
     const s = fitScale(el.clientWidth || printWidth, printWidth);
-    const { data, layout } = applyState(base, state, controls);
+    let { data, layout } = applyState(base, state, controls);
+    const dark = isDark();
+    el.dataset.theme = dark ? "dark" : "light"; // for the page's own CSS
+    if (dark) [data, layout] = [darken(data, palette), darkLayout(layout, palette)];
     return Plotly.react(el, scaleLayout(data, s), roundGeometry(scaleLayout(layout, s)), { displayModeBar: false, responsive: false });
   };
   await draw();
@@ -116,6 +167,9 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
     });
     el.after(row);
   }
+  // Redraw when the theme changes: the website's toggle, or the system's.
+  new MutationObserver(() => draw()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  globalThis.matchMedia?.("(prefers-color-scheme: dark)").addEventListener("change", () => draw());
   let pending;
   new ResizeObserver(() => { clearTimeout(pending); pending = setTimeout(draw, 50); }).observe(el);
   // A legend entry's label toggles its group (its traces; its handle and label dim).

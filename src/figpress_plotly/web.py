@@ -21,7 +21,12 @@ PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="figpress-plotly-version" content="{version}">
 <title>{title}</title>
-<style>html, body {{ margin: 0; background: #fff; }} .fp-figure {{ width: 100%; }}</style>
+<style>
+html, body {{ margin: 0; background: #fff; color: #12161c; }} .fp-figure {{ width: 100%; }}
+html:has(.fp-figure[data-theme="dark"]), html:has(.fp-figure[data-theme="dark"]) body {{
+  background: #0b0e14; color: #e5e9f0; color-scheme: dark;
+}}
+</style>
 {plotly}
 </head>
 <body>

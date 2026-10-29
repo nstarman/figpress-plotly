@@ -104,10 +104,10 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 ## Phase 7: User Story 5 — light and dark (P3)
 
-- [ ] T031 [P] [US5] Runtime tests for `darkNeutral`: greys invert into the palette, alpha kept,
+- [x] T031 [P] [US5] Runtime tests for `darkNeutral`: greys invert into the palette, alpha kept,
       colours untouched
-- [ ] T032 [US5] Runtime: theme from `data-theme` or `prefers-color-scheme`, redraw on change (R8)
-- [ ] T033 [US5] Smoke: dark page → neutral colours dark, data colours unchanged; back to light
+- [x] T032 [US5] Runtime: theme from `data-theme` or `prefers-color-scheme`, redraw on change (R8)
+- [x] T033 [US5] Smoke: dark page → neutral colours dark, data colours unchanged; back to light
 
 ## Phase 8: Polish and release
 

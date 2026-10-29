@@ -1,7 +1,7 @@
 // The runtime's pure functions: scaling and the reader's state.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyState, fitScale, formatValue, roundGeometry, scaleLayout, setPath, traceGroup } from "../src/figpress_plotly/js/index.js";
+import { applyState, darken, darkLayout, darkNeutral, DARK, fitScale, formatValue, isDark, roundGeometry, scaleLayout, setPath, traceGroup } from "../src/figpress_plotly/js/index.js";
 
 test("pixel settings scale; data and other numbers do not", () => {
   const layout = { width: 300, margin: { l: 40, t: 2, pad: 0 }, font: { size: 10 }, xaxis: { range: [-3, -1], ticklen: 4,
@@ -88,4 +88,31 @@ test("a stale setting is clamped", () => {
 test("readouts", () => {
   assert.equal(formatValue(0.5, ".2f"), "0.50");
   assert.equal(formatValue(0.5, "g"), "0.5");
+});
+
+test("dark: greys map between the palette's text and background; colours and alpha stay", () => {
+  assert.equal(darkNeutral("white"), "rgb(11,14,20)");
+  assert.equal(darkNeutral("black"), "rgb(229,233,240)");
+  assert.equal(darkNeutral("#000000"), "rgb(229,233,240)");
+  assert.equal(darkNeutral("rgba(128,128,128,0.4)"), "rgba(120,123,130,0.4)");
+  assert.equal(darkNeutral("rgba(31,119,180,0.15)"), "rgba(31,119,180,0.15)");
+  assert.equal(darkNeutral("rgb(255,0,0)"), "rgb(255,0,0)");
+});
+
+test("dark: colour settings only, backgrounds and text set", () => {
+  const fig = darken({ line: { color: "black", width: 2 }, name: "black", fillcolor: "white", y: { bdata: "x", dtype: "f8" } });
+  assert.deepEqual(fig, { line: { color: "rgb(229,233,240)", width: 2 }, name: "black", fillcolor: "rgb(11,14,20)",
+    y: { bdata: "x", dtype: "f8" } });
+  const l = darkLayout({ font: { size: 10 } });
+  assert.deepEqual([l.paper_bgcolor, l.plot_bgcolor, l.font.color, l.font.size], [DARK.ground, DARK.ground, DARK.ink, 10]);
+});
+
+test("the theme: asked for, else the toggle, else the system", () => {
+  const doc = (theme) => ({ documentElement: { dataset: theme ? { theme } : {} } });
+  const win = (search, dark) => ({ location: { search }, matchMedia: () => ({ matches: dark }) });
+  assert.equal(isDark(doc(), win("?theme=dark", false)), true);
+  assert.equal(isDark(doc("dark"), win("?theme=light", true)), false);
+  assert.equal(isDark(doc("dark"), win("", false)), true);
+  assert.equal(isDark(doc(), win("", true)), true);
+  assert.equal(isDark(doc(), win("", false)), false);
 });
