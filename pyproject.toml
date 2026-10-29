@@ -10,12 +10,24 @@ readme = "README.md"
 license = "MIT"
 authors = [{ name = "Nathaniel Starkman" }]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "plotly>=7,<8",
+  "kaleido>=1",
+  "fonttools>=4.50",
+  "pypdfium2>=4.30",
+  "pillow>=10",
+]
 classifiers = [
   "Development Status :: 1 - Planning",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
+
+[project.scripts]
+figpress-plotly = "figpress_plotly.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "playwright>=1.48", "matplotlib>=3.9", "numpy>=2"]
 
 [project.urls]
 Homepage = "https://nstarkman.space/figpress/"
@@ -26,6 +38,11 @@ path = "src/figpress_plotly/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/figpress_plotly"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["smoke: drives a browser (Playwright)"]
+addopts = "-m 'not smoke'"
 
 [tool.hatch.build.targets.sdist]
 include = ["src/figpress_plotly", "README.md", "LICENSE", "CHANGELOG.md"]

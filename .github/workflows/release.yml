@@ -21,7 +21,7 @@ jobs:
           node-version: "24"
       - name: The versions match the tag
         run: python3 scripts/version.py check "$GITHUB_REF_NAME"
-      - run: python3 -m unittest discover -s tests -v
+      - run: uv run pytest -v
       - run: node --test "tests/*.test.mjs"
       - run: uv build
       - uses: actions/upload-artifact@v7

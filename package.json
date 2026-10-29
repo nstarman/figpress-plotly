@@ -3,9 +3,9 @@
   "version": "20261028.0.0",
   "description": "A paper's figures in Plotly: the print figure and a matching interactive web figure from one definition. In early development.",
   "type": "module",
-  "exports": "./index.js",
+  "exports": "./src/figpress_plotly/js/index.js",
   "files": [
-    "index.js",
+    "src/figpress_plotly/js/index.js",
     "README.md",
     "LICENSE"
   ],

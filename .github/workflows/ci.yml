@@ -20,9 +20,21 @@ jobs:
       - name: Versions agree
         run: python3 scripts/version.py check
       - name: Python tests
-        run: python3 -m unittest discover -s tests -v
-      - name: npm CLI tests
+        run: uv run pytest -v
+      - name: Runtime tests
         run: node --test "tests/*.test.mjs"
+      - name: The example, built and compared with its reference
+        run: |
+          start=$SECONDS
+          uv run figpress-plotly build examples/bands/figure.py:bands --out build/
+          echo "built in $((SECONDS - start)) s"; test $((SECONDS - start)) -lt 30  # SC-006
+          uv run figpress-plotly compare build/bands.pdf examples/bands/reference.pdf --tol 1 --overlay build/overlay.png
+          uv run figpress-plotly build examples/native/figure.py:rotation --out build/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: example
+          path: build/
       - name: The Python package builds and imports
         run: |
           uv build
@@ -33,3 +45,18 @@ jobs:
           mkdir /tmp/try && cd /tmp/try && npm init -y >/dev/null
           npm install "$GITHUB_WORKSPACE"/nstarkman-figpress-plotly-*.tgz
           node --input-type=module -e "import { version } from \"@nstarkman/figpress-plotly\"; console.log(version)"
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v6
+      - name: Playwright's Chromium
+        run: uv run playwright install --with-deps chromium
+      - name: The web figure in a browser (hover, toggles, resize, offline, overlay at three widths)
+        run: uv run pytest -m smoke -v
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke
+          path: build/smoke/
