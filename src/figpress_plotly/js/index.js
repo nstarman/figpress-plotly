@@ -10,6 +10,7 @@ export const status = "early development";
 const PX_KEYS = new Set(["size", "width", "height", "ticklen", "tickwidth", "gridwidth", "linewidth", "borderwidth",
   "standoff", "startstandoff", "ticklabelstandoff", "arrowwidth", "xshift", "yshift", "borderpad", "l", "r", "t", "b", "pad"]);
 const MAX_SCALE = 3;
+const MIN_SCALE = 0.5; // below half the print width, text would collide: the figure scrolls instead
 const DIM = 0.35; // a hidden group's legend entry
 
 /** `v` with every pixel-valued setting times `s`. */
@@ -119,8 +120,8 @@ export function isDark(doc = document, win = globalThis) {
   return !!win.matchMedia?.("(prefers-color-scheme: dark)").matches;
 }
 
-/** The scale that fits the print width into `width` px. */
-export const fitScale = (width, printWidth) => Math.min(MAX_SCALE, width / printWidth);
+/** The scale that fits the print width into `width` px, between half and three times. */
+export const fitScale = (width, printWidth) => Math.max(MIN_SCALE, Math.min(MAX_SCALE, width / printWidth));
 
 /** Draw `spec` (a built figure's figure.json) into `el` and keep it interactive. */
 export async function mount(el, spec, { Plotly = globalThis.Plotly, palette = DARK } = {}) {
@@ -130,6 +131,7 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly, palette = DA
   // Glyphs placed exactly, as in print: without this, Chromium on Linux rounds small text's glyph
   // advances to whole pixels, and a 5.5 pt label grows by 2 pt.
   el.style.textRendering = "geometricPrecision";
+  el.style.overflowX = "auto"; // a column narrower than half the print width scrolls
   const controls = spec.controls ?? [];
   const state = { hidden: new Set(), controls: Object.fromEntries(controls.map((c) => [c.name, c.index])) };
   const base = spec.figure;

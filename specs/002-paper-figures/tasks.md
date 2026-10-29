@@ -80,6 +80,8 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 ## Phase 5b: User Story 6 — native figures (P1)
 
+Added during implementation (after the plan), so its tasks are numbered after the plan's.
+
 - [x] T038 [US6] `fp.figure`: `margins=` as an alternative to `frame=`; `fonts`, `spine` and margins
       default from a style; tests in `tests/test_figure.py`
 - [x] T039 [US6] `fp.Style` (`src/figpress_plotly/style.py`): fonts, sizes, ticks, line widths and
@@ -106,7 +108,8 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 - [x] T031 [P] [US5] Runtime tests for `darkNeutral`: greys invert into the palette, alpha kept,
       colours untouched
-- [x] T032 [US5] Runtime: theme from `data-theme` or `prefers-color-scheme`, redraw on change (R8)
+- [x] T032 [US5] Runtime: theme from `?theme=`, else `data-theme`, else `prefers-color-scheme`; redraw
+      on change (R8)
 - [x] T033 [US5] Smoke: dark page → neutral colours dark, data colours unchanged; back to light
 
 ## Phase 8: Polish and release
@@ -114,6 +117,8 @@ checked in CI). Each story's tests come first and fail before its implementation
 - [x] T034 [P] README (what it is, a short example, the CLI), AGENTS.md layout, CHANGELOG
       `## YYYY.MM.DD`
 - [x] T035 Example build time < 30 s on CI (SC-006); a control redraw < 100 ms (smoke, measured)
+- [x] T043 [US2] Edge case: below half the print width the figure keeps that size and its column
+      scrolls (runtime `fitScale`; smoke `test_a_narrow_column_scrolls_rather_than_shrinking_past_half`)
 - [ ] T036 Release `vYYYY.MM.DD` (`scripts/version.py set`, tag, `release.yml`); check fresh
       installs from PyPI and npm
 - [ ] T037 Outside this repository: port CP1's Paper Figure 7 (SC-003) — the PDF passes

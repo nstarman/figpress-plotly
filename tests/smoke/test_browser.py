@@ -83,3 +83,11 @@ def test_plotly_legend_clicks_survive_resize(open_page, server):
     page.set_viewport_size({"width": 400, "height": 900})
     page.wait_for_function(f"document.getElementById('figure')._fullLayout.width < {width}")
     assert page.evaluate(state, "Disk") == "legendonly"
+
+
+def test_a_narrow_column_scrolls_rather_than_shrinking_past_half(open_page):
+    """Edge case: below half the print width the figure keeps that size and the column scrolls."""
+    page = open_page(width=120)
+    width = page.evaluate("document.getElementById('figure')._fullLayout.width")
+    assert width == round(244.8 * 4 / 3 * 0.5)
+    assert page.evaluate("(e => e.scrollWidth > e.clientWidth)(document.getElementById('figure'))")

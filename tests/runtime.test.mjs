@@ -40,6 +40,7 @@ test("a hidden group: its traces invisible, its legend entry dimmed, the rest un
 test("the fit is capped", () => {
   assert.equal(fitScale(600, 300), 2);
   assert.equal(fitScale(3000, 300), 3);
+  assert.equal(fitScale(100, 300), 0.5); // narrower: it scrolls
 });
 
 test("the plot area's edges are rounded, not each margin", () => {

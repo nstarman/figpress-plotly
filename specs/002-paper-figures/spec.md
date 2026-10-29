@@ -159,8 +159,8 @@ resize keeps it hidden.
 
 ### Edge Cases
 
-- A column narrower than half the print width: the figure still scales as a whole (no reflow);
-  below a minimum scale the page scrolls horizontally rather than overlapping text.
+- A narrow column: the figure scales as a whole (no reflow) down to half the print width; in a
+  narrower column it keeps that size and scrolls horizontally rather than overlapping text.
 - A font file missing or unreadable: the build fails and names the font; it never falls back.
 - A label wider than its place in print: the PDF is still produced; the comparison (US4) reports it.
 - Log axes: shapes, annotations and hover values are placed by data value, as on linear axes.
@@ -189,9 +189,9 @@ resize keeps it hidden.
   paper's fonts.
 - **FR-008**: Every web figure MUST support hover values (declared per series) and legend toggles
   (declared per group).
-- **FR-009**: A figure MAY declare controls over parameters, with the values each affected series,
-  shape and label takes for each setting; the shared runtime MUST apply them without per-figure
-  scripts.
+- **FR-009**: A figure MAY declare controls over its parameters (range, step, the paper's value); the
+  library MUST build every setting and keep what each changes (series, shapes, labels), and the
+  shared runtime MUST apply them without per-figure scripts.
 - **FR-010**: The reader's state (hidden groups, control values) MUST survive redraws and resizes.
 - **FR-011**: The web figure MUST follow the page's light or dark theme for neutral colours only.
 - **FR-012**: The library MUST provide a comparison of two PDFs of the same page: an overlay image
@@ -211,7 +211,8 @@ resize keeps it hidden.
 
 - **Figure**: the author's function of the target; returns the figure and what it declares (page
   size, fonts, hover, groups, controls).
-- **Page geometry**: page size and frame in points; the units every other size is given in.
+- **Page geometry**: page size and frame (or margins) in points; the units every other size is given in.
+- **Style**: a paper's fonts and print settings, shared by its figures as defaults they override.
 - **Font set**: the paper's font files, by role (text, bold, math italic, math upright).
 - **Group**: elements that toggle together, with the legend entry that toggles them.
 - **Control**: a parameter with its range, step and paper's value, and the values it gives the

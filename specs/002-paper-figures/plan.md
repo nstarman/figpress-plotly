@@ -7,12 +7,13 @@
 ## Summary
 
 The library behind `build(target)`. An author writes a plain Plotly figure as a function of the
-target and of the figure's parameters, in points, and decorates it with its page, frame, fonts and
-controls. figpress-plotly converts points to Plotly's px, sets labels with mathematics in the
-paper's fonts, prints the PDF at the exact page through headless Chrome, and writes a web page
-(and a single file) where one shared runtime scales the print layout, keeps the reader's state, and
-wires hover, group toggles on a drawn legend, precomputed controls and dark mode. A comparison tool
-measures a PDF against the paper's figure. Design decisions: [research.md](research.md).
+target and of the figure's parameters, in points, and decorates it with its page, an exact frame
+(porting) or margins (a new figure), its fonts or a paper-wide style, and its controls.
+figpress-plotly converts points to Plotly's px, sets labels with mathematics in the paper's fonts,
+prints the PDF at the exact page through headless Chrome, and writes a web page (and a single file)
+where one shared runtime scales the print layout, keeps the reader's state, and wires hover, group
+toggles (a drawn legend or Plotly's own), precomputed controls and dark mode. A comparison tool
+measures a PDF against the paper's figure when one is ported. Design decisions: [research.md](research.md).
 
 ## Technical Context
 
@@ -43,7 +44,7 @@ no per-figure browser code (Principle IV)
 
 | Principle | How this plan meets it |
 |---|---|
-| I. The paper is the reference | One decorated `build(target, **params)` per figure; both outputs come from it; the web page starts at the paper's parameter values. |
+| I. The paper is the reference | One decorated `build(target, **params)` per figure; both outputs come from it; the web page starts at the paper's parameter values. A paper style is defaults only (a template), so the figure stays the one definition. |
 | II. Print fidelity in the paper's units | Every size in points through `fp.pt`, `fp.dash`, page coordinates; the paper's fonts registered in Kaleido's page and embedded in the PDF; PDF at the exact page with no margin; `fp.compare` measures it, in CI against a matplotlib reference (R9, R10). |
 | III. The web adds, never changes | The runtime only scales, adds hover, toggles, controls and dark neutrals; control differences are found from the author's own builds, so nothing else can move (R5). |
 | IV. One runtime, declared interactions | One `index.js`; groups, hover, controls are declared in Python; no per-figure scripts (R5–R7). |
@@ -67,13 +68,14 @@ specs/002-paper-figures/
 
 ```text
 src/figpress_plotly/
-├── __init__.py        public API: figure, Control, Fonts, dejavu, pt, dash, tex, stack, frac,
-│                      legend, compare
+├── __init__.py        public API: figure, Control, Style, Fonts, dejavu, pt, dash, context, tex,
+│                      text, stack, frac, legend, Entry, compare
 ├── units.py           pt → px, dash patterns, page/frame coordinates
 ├── fonts.py           Fonts, dejavu(), text widths (fontTools), @font-face and FontFace payloads
 ├── text.py            tex() subset → Plotly markup; stack(), frac()
 ├── legend.py          matplotlib-style drawn legend with group handles
-├── figure.py          the decorator: holds page, fonts, controls; base layout (axes in points)
+├── figure.py          the decorator: page, frame or margins, fonts, style, controls; base layout
+├── style.py           Style: a paper's fonts and print settings as a Plotly template (US6)
 ├── controls.py        builds each setting, finds the differing leaves, packs them
 ├── pdf.py             Kaleido SVG with the fonts → HTML with @page → Chrome print
 ├── web.py             page folder (index.html, figure.json, vendor/, fonts/) and single file
@@ -81,8 +83,11 @@ src/figpress_plotly/
 ├── cli.py             figpress-plotly build | compare
 └── js/index.js        the runtime (also the npm package's entry)
 examples/bands/
-├── figure.py          the synthetic example (every requirement; FR-013)
+├── figure.py          the synthetic port (every requirement; FR-013)
 └── reference.py       the same figure in matplotlib → reference.pdf (committed)
+examples/native/
+├── style.py           a paper's style (STIX, a Times-like face)
+└── figure.py          a new figure: margins, the style, Plotly's legend, no reference (SC-007)
 tests/                 test_*.py; runtime.test.mjs; smoke/ (Playwright)
 ```
 
@@ -99,9 +104,11 @@ file.
 2. **Compare (US4)**: needed to check phase 1 properly, so it lands with it.
 3. **Web (US2)**: page writer, runtime (fonts, scaling, state, hover, legend toggles), single file,
    smoke tests including no-network and the three-width overlay.
-4. **Controls (US3)**: difference finder, runtime application, control UI.
-5. **Dark mode (US5)**: neutral mapping, theme detection.
-6. **Release** `vYYYY.MM.DD` (PyPI and npm), then **port CP1's Paper Figure 7** in the CP1
+4. **Native figures (US6)**, added during implementation: margins, `fp.Style`, Plotly's own legend
+   as reader state, the native example (tasks T038–T042, numbered after the plan's).
+5. **Controls (US3)**: difference finder, runtime application, control UI.
+6. **Dark mode (US5)**: neutral mapping, theme detection.
+7. **Release** `vYYYY.MM.DD` (PyPI and npm), then **port CP1's Paper Figure 7** in the CP1
    repository (SC-003) — outside this repository, after the release.
 
 ## Complexity Tracking
