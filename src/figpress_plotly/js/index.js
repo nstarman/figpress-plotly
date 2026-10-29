@@ -2,7 +2,7 @@
 // every figure: it loads the paper's fonts, draws the print layout scaled to its container, keeps
 // what the reader changed across redraws, and wires the interactions the figure declares.
 // https://github.com/nstarman/figpress-plotly · https://nstarkman.space/figpress/
-export const version = "20261029.0.0";
+export const version = "20261029.0.2";
 export const status = "early development";
 
 // Every layout value in CSS px, scaled with the figure (CSS zoom or transforms would break Plotly's

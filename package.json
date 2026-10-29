@@ -1,6 +1,6 @@
 {
   "name": "@nstarkman/figpress-plotly",
-  "version": "20261029.0.0",
+  "version": "20261029.0.2",
   "description": "A paper's figures in Plotly: the print figure and a matching interactive web figure from one definition. In early development.",
   "type": "module",
   "exports": "./src/figpress_plotly/js/index.js",
