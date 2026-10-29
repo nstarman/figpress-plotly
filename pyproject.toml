@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "figpress-plotly"
+dynamic = ["version"]
+description = "A paper's figures in Plotly: the print figure and a matching interactive web figure from one definition. In early development."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Nathaniel Starkman" }]
+requires-python = ">=3.11"
+dependencies = []
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Visualization",
+]
+
+[project.urls]
+Homepage = "https://nstarkman.space/figpress/"
+Repository = "https://github.com/nstarman/figpress-plotly"
+
+[tool.hatch.version]
+path = "src/figpress_plotly/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/figpress_plotly"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/figpress_plotly", "README.md", "LICENSE", "CHANGELOG.md"]

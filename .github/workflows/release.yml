@@ -1,0 +1,67 @@
+name: Release
+
+# A tag vYYYY.MM.DD[.N] publishes figpress-plotly to PyPI (YYYY.MM.DD[.N]) and npm (YYYYMMDD.0.N) with
+# trusted publishing: no token is stored. A version already on an index is skipped, so the first
+# npm release, published by hand, does not fail the workflow.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: The versions match the tag
+        run: python3 scripts/version.py check "$GITHUB_REF_NAME"
+      - run: python3 -m unittest discover -s tests -v
+      - run: node --test "tests/*.test.mjs"
+      - run: uv build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      # Trusted publishing needs npm 11.5.1 or newer; Node 24 ships it.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Publish (unless this version is already on npm)
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "figpress-plotly@$v" version >/dev/null 2>&1; then
+            echo "::notice::figpress-plotly@$v is already on npm."
+          else
+            npm publish --provenance --access public
+          fi

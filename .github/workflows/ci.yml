@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Versions agree
+        run: python3 scripts/version.py check
+      - name: Python tests
+        run: python3 -m unittest discover -s tests -v
+      - name: npm CLI tests
+        run: node --test "tests/*.test.mjs"
+      - name: The Python package builds and imports
+        run: |
+          uv build
+          uv run --no-project --with dist/*.whl python -c "import figpress_plotly as f; print(f.__version__)"
+      - name: The npm package packs and imports
+        run: |
+          npm pack
+          mkdir /tmp/try && cd /tmp/try && npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE"/figpress-plotly-*.tgz
+          node --input-type=module -e "import { version } from \"figpress-plotly\"; console.log(version)"
