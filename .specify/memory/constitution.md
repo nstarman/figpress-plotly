@@ -52,7 +52,7 @@ can do more. It is a member of the figpress family.
 
 - Versions are dates: tags `vYYYY.MM.DD`, and `vYYYY.MM.DD.N` for another release the same day.
   The PyPI version is the tag's; npm gets `YYYYMMDD.0.N` (three-part semver), as in figpress. The
-  Python package publishes to PyPI and the runtime to npm, from `.github/workflows/release.yml`
+  Python package publishes to PyPI and the runtime to npm as `@nstarkman/figpress-plotly`, from `.github/workflows/release.yml`
   with trusted publishing (GitHub environments `pypi` and `npm`). No API token is stored.
 - Rationale: as for the rest of the figpress family.
 
@@ -69,4 +69,4 @@ can do more. It is a member of the figpress family.
 - Amendments are made by pull request with a version bump: MAJOR for removing or redefining a
   principle, MINOR for adding or materially expanding one, PATCH for wording.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-10-28
+**Version**: 1.0.1 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-10-28

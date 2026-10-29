@@ -27,7 +27,7 @@ requiring (npm) the package works and reports its version and status.
 1. **Given** the first release, **When** someone installs `figpress-plotly` from PyPI and imports
    it, **Then** it imports, reports its version, and its description says it is in early
    development with a link to the family website.
-2. **Given** the first release, **When** someone installs `figpress-plotly` from npm and imports
+2. **Given** the first release, **When** someone installs `@nstarkman/figpress-plotly` from npm and imports
    it, **Then** the same holds.
 
 ---
@@ -61,7 +61,8 @@ package to npm, with no stored token.
 ### Functional Requirements
 
 - **FR-001**: The repository MUST contain a Python package `figpress-plotly` (import name
-  `figpress_plotly`) and a JavaScript package `figpress-plotly`, whose versions map to the same tag.
+  `figpress_plotly`) and a JavaScript package `@nstarkman/figpress-plotly` (npm, scoped as for the whole
+  family), whose versions map to the same tag.
 - **FR-002**: Both MUST state in their description that the library is in early development and
   link to the figpress website and the repository; neither may claim features it lacks.
 - **FR-003**: Both MUST expose their version (`figpress_plotly.__version__`; `version` export).
@@ -75,7 +76,7 @@ package to npm, with no stored token.
 
 ### Measurable Outcomes
 
-- **SC-001**: `pip install figpress-plotly` and `npm install figpress-plotly` succeed from the first
+- **SC-001**: `pip install figpress-plotly` and `npm install @nstarkman/figpress-plotly` succeed from the first
   release on.
 - **SC-002**: After the first npm release, a release needs only a pushed tag; no stored secret
   exists in the repository.

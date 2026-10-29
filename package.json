@@ -1,13 +1,22 @@
 {
-  "name": "figpress-plotly",
+  "name": "@nstarkman/figpress-plotly",
   "version": "20261028.0.0",
   "description": "A paper's figures in Plotly: the print figure and a matching interactive web figure from one definition. In early development.",
   "type": "module",
   "exports": "./index.js",
-  "files": ["index.js", "README.md", "LICENSE"],
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
   "license": "MIT",
   "author": "Nathaniel Starkman",
   "homepage": "https://nstarkman.space/figpress/",
-  "repository": { "type": "git", "url": "git+https://github.com/nstarman/figpress-plotly.git" },
-  "engines": { "node": ">=18" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nstarman/figpress-plotly.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

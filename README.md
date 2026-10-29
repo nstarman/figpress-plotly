@@ -5,7 +5,7 @@ a matching interactive web figure that can do more — hover values, legend togg
 recompute what is plotted — while never disagreeing with the paper.
 
 > **Early development.** This release only claims the name on
-> [PyPI](https://pypi.org/project/figpress-plotly/) and [npm](https://www.npmjs.com/package/figpress-plotly).
+> [PyPI](https://pypi.org/project/figpress-plotly/) and [npm](https://www.npmjs.com/package/@nstarkman/figpress-plotly) (as `@nstarkman/figpress-plotly`).
 > The library is being designed and built here.
 
 Part of the [figpress](https://nstarkman.space/figpress/) family.

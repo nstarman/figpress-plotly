@@ -31,5 +31,5 @@ jobs:
         run: |
           npm pack
           mkdir /tmp/try && cd /tmp/try && npm init -y >/dev/null
-          npm install "$GITHUB_WORKSPACE"/figpress-plotly-*.tgz
-          node --input-type=module -e "import { version } from \"figpress-plotly\"; console.log(version)"
+          npm install "$GITHUB_WORKSPACE"/nstarkman-figpress-plotly-*.tgz
+          node --input-type=module -e "import { version } from \"@nstarkman/figpress-plotly\"; console.log(version)"

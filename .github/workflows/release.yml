@@ -1,6 +1,6 @@
 name: Release
 
-# A tag vYYYY.MM.DD[.N] publishes figpress-plotly to PyPI (YYYY.MM.DD[.N]) and npm (YYYYMMDD.0.N) with
+# A tag vYYYY.MM.DD[.N] publishes figpress-plotly to PyPI (YYYY.MM.DD[.N]) and @nstarkman/figpress-plotly to npm (YYYYMMDD.0.N) with
 # trusted publishing: no token is stored. A version already on an index is skipped, so the first
 # npm release, published by hand, does not fail the workflow.
 on:
@@ -60,8 +60,8 @@ jobs:
       - name: Publish (unless this version is already on npm)
         run: |
           v=$(node -p "require('./package.json').version")
-          if npm view "figpress-plotly@$v" version >/dev/null 2>&1; then
-            echo "::notice::figpress-plotly@$v is already on npm."
+          if npm view "@nstarkman/figpress-plotly@$v" version >/dev/null 2>&1; then
+            echo "::notice::@nstarkman/figpress-plotly@$v is already on npm."
           else
             npm publish --provenance --access public
           fi
