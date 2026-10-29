@@ -53,6 +53,9 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
   const faces = Object.entries(spec.fonts).map(([family, src]) => new FontFace(family, `url(${src})`));
   faces.forEach((f) => document.fonts.add(f));
   await Promise.all(faces.map((f) => f.load()));
+  // Glyphs placed exactly, as in print: without this, Chromium on Linux rounds small text's glyph
+  // advances to whole pixels, and a 5.5 pt label grows by 2 pt.
+  el.style.textRendering = "geometricPrecision";
   const state = { hidden: new Set() };
   const base = spec.figure;
   const printWidth = base.layout.width;
