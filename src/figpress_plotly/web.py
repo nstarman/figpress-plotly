@@ -9,6 +9,7 @@ from pathlib import Path
 from plotly.offline import get_plotlyjs, get_plotlyjs_version
 
 from . import __version__
+from .controls import pack
 from .fonts import b64
 
 RUNTIME = Path(__file__).parent / "js" / "index.js"
@@ -32,10 +33,11 @@ PAGE = """<!doctype html>
 
 
 def spec(figure, fonts: dict[str, str], **params) -> dict:
-    """What the runtime draws: the web figure and where its fonts are."""
-    fig = figure.build("web", **params)
+    """What the runtime draws: the web figure, its controls and where its fonts are."""
+    base = json.loads(figure.build("web", **params).to_json())
     return {"version": __version__, "name": figure.name, "page": list(figure.page),
-            "figure": json.loads(fig.to_json()), "fonts": fonts, "controls": []}
+            "figure": base, "fonts": fonts, "controls": pack(figure, base, **params)}
+
 
 
 def write_web(figure, out: Path, single_file: Path | None = None, **params) -> Path:
@@ -61,14 +63,15 @@ def write_web(figure, out: Path, single_file: Path | None = None, **params) -> P
     (out / "index.html").write_text(PAGE.format(version=__version__, title=html.escape(figure.name),
                                                 plotly=f'<script src="{plotly_js}"></script>', boot=boot), encoding="utf-8")
     if single_file is not None:
-        write_single(figure, Path(single_file), **params)
+        write_single(figure, Path(single_file), _spec=s, **params)
     return out
 
 
-def write_single(figure, path: Path, **params) -> Path:
+def write_single(figure, path: Path, _spec: dict | None = None, **params) -> Path:
     """The page as one HTML file: Plotly.js, the runtime, the figure and the fonts inlined."""
     fonts = {fam: f"data:font/ttf;base64,{b64(p)}" for fam, p in figure.fonts.files().items()}
-    s = json.dumps(spec(figure, fonts, **params)).replace("</", "<\\/")
+    s = {**_spec, "fonts": fonts} if _spec is not None else spec(figure, fonts, **params)
+    s = json.dumps(s).replace("</", "<\\/")
     # The runtime's own module, inlined; its exports are unused here.
     boot = (f'<script type="module">\n{RUNTIME.read_text(encoding="utf-8")}\n'
             f'mount(document.getElementById("figure"), {s});\n</script>')

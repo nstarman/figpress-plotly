@@ -1,7 +1,7 @@
 // The runtime's pure functions: scaling and the reader's state.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyState, fitScale, roundGeometry, scaleLayout, traceGroup } from "../src/figpress_plotly/js/index.js";
+import { applyState, fitScale, formatValue, roundGeometry, scaleLayout, setPath, traceGroup } from "../src/figpress_plotly/js/index.js";
 
 test("pixel settings scale; data and other numbers do not", () => {
   const layout = { width: 300, margin: { l: 40, t: 2, pad: 0 }, font: { size: 10 }, xaxis: { range: [-3, -1], ticklen: 4,
@@ -54,4 +54,38 @@ test("a trace without a legendgroup is its own group", () => {
   assert.equal(traceGroup({ name: "data" }, 4), "trace:4");
   const { data } = applyState({ data: [{ name: "a" }, { name: "b" }], layout: {} }, { hidden: new Set(["trace:1"]) });
   assert.deepEqual(data.map((t) => t.visible), [undefined, "legendonly"]);
+});
+
+test("setPath copies only along the path", () => {
+  const a = { data: [{ y: [1] }, { y: [2] }], layout: { x: 1 } };
+  const b = setPath(a, ["data", 1, "y"], [3]);
+  assert.deepEqual(b.data[1].y, [3]);
+  assert.equal(a.data[1].y[0], 2);
+  assert.equal(b.data[0], a.data[0]);
+  assert.equal(b.layout, a.layout);
+});
+
+const C = [{ name: "k", index: 1, settings: [0.5, 1, 1.5],
+  diffs: [{ path: ["data", 0, "y"], values: [[0.5], [1], [1.5]] }, { path: ["layout", "annotations", 0, "text"], values: ["a", "b", "c"] }] }];
+const FIG = { data: [{ y: [1] }], layout: { annotations: [{ text: "b" }], shapes: [] } };
+
+test("a control at a setting puts in that setting's values", () => {
+  const { data, layout } = applyState(FIG, { hidden: new Set(), controls: { k: 2 } }, C);
+  assert.deepEqual(data[0].y, [1.5]);
+  assert.equal(layout.annotations[0].text, "c");
+});
+
+test("at the paper's setting the figure is the paper's, untouched", () => {
+  const { data } = applyState(FIG, { hidden: new Set(), controls: { k: 1 } }, C);
+  assert.equal(data[0], FIG.data[0]);
+});
+
+test("a stale setting is clamped", () => {
+  assert.deepEqual(applyState(FIG, { hidden: new Set(), controls: { k: 9 } }, C).data[0].y, [1.5]);
+  assert.deepEqual(applyState(FIG, { hidden: new Set(), controls: { k: -3 } }, C).data[0].y, [0.5]);
+});
+
+test("readouts", () => {
+  assert.equal(formatValue(0.5, ".2f"), "0.50");
+  assert.equal(formatValue(0.5, "g"), "0.5");
 });

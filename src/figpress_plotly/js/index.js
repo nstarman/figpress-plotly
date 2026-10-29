@@ -39,14 +39,36 @@ const groupOf = (name) => (typeof name === "string" && name.startsWith("legend:"
 /** A trace's group: its legendgroup, or the trace on its own. */
 export const traceGroup = (t, i) => t.legendgroup || `trace:${i}`;
 
-/** The figure as the reader left it: hidden groups' traces off (still in Plotly's legend, dimmed),
- * their drawn legend entries dimmed. */
-export function applyState(figure, state) {
-  const data = figure.data.map((t, i) => (state.hidden.has(traceGroup(t, i)) ? { ...t, visible: "legendonly" } : t));
+/** `obj` with the value at `path` replaced, copying only what lies along the path. */
+export function setPath(obj, path, value) {
+  if (!path.length) return value;
+  const [k, ...rest] = path;
+  const copy = Array.isArray(obj) ? [...obj] : { ...obj };
+  copy[k] = setPath(obj[k], rest, value);
+  return copy;
+}
+
+const clamp = (i, n) => Math.max(0, Math.min(n - 1, Math.round(i)));
+
+/** The figure as the reader left it: each control at its setting (the values built for it put in),
+ * hidden groups' traces off (still in Plotly's legend, dimmed), their drawn legend entries dimmed. */
+export function applyState(figure, state, controls = []) {
+  let fig = figure;
+  for (const c of controls) {
+    const i = clamp(state.controls?.[c.name] ?? c.index, c.settings.length);
+    if (i !== c.index) for (const d of c.diffs) fig = setPath(fig, d.path, d.values[i]);
+  }
+  const data = fig.data.map((t, i) => (state.hidden.has(traceGroup(t, i)) ? { ...t, visible: "legendonly" } : t));
   const dim = (o) => (state.hidden.has(groupOf(o.name)) ? { ...o, opacity: DIM } : o);
-  const layout = { ...figure.layout, shapes: (figure.layout.shapes ?? []).map(dim),
-    annotations: (figure.layout.annotations ?? []).map(dim) };
+  const layout = { ...fig.layout, shapes: (fig.layout.shapes ?? []).map(dim),
+    annotations: (fig.layout.annotations ?? []).map(dim) };
   return { data, layout };
+}
+
+/** A control's value as its readout shows it (`.2f`, or as is). */
+export function formatValue(v, format) {
+  const m = /^\.(\d+)f$/.exec(format ?? "");
+  return m ? v.toFixed(+m[1]) : String(v);
 }
 
 /** The scale that fits the print width into `width` px. */
@@ -60,12 +82,13 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
   // Glyphs placed exactly, as in print: without this, Chromium on Linux rounds small text's glyph
   // advances to whole pixels, and a 5.5 pt label grows by 2 pt.
   el.style.textRendering = "geometricPrecision";
-  const state = { hidden: new Set() };
+  const controls = spec.controls ?? [];
+  const state = { hidden: new Set(), controls: Object.fromEntries(controls.map((c) => [c.name, c.index])) };
   const base = spec.figure;
   const printWidth = base.layout.width;
   const draw = () => {
     const s = fitScale(el.clientWidth || printWidth, printWidth);
-    const { data, layout } = applyState(base, state);
+    const { data, layout } = applyState(base, state, controls);
     return Plotly.react(el, scaleLayout(data, s), roundGeometry(scaleLayout(layout, s)), { displayModeBar: false, responsive: false });
   };
   await draw();
@@ -73,6 +96,26 @@ export async function mount(el, spec, { Plotly = globalThis.Plotly } = {}) {
   // Plotly's own legend: its clicks are the reader's state too, so a redraw keeps them.
   el.on("plotly_legendclick", (ev) => { toggle(traceGroup(base.data[ev.curveNumber], ev.curveNumber)); return false; });
   el.on("plotly_legenddoubleclick", () => false);
+  // A slider under the figure per control, over the settings built for it.
+  let frame;
+  for (const c of controls) {
+    const row = document.createElement("label");
+    row.className = "fp-control";
+    row.style.cssText = "display:flex;align-items:center;gap:.6em;margin-top:.4em;font-family:fp-text,serif";
+    row.innerHTML = `<span>${c.label}</span><input type="range" min="0" max="${c.settings.length - 1}" step="1"
+      style="flex:1"><output style="min-width:3em;font-variant-numeric:tabular-nums"></output>`;
+    const [input, output] = [row.querySelector("input"), row.querySelector("output")];
+    const show = () => { output.textContent = formatValue(c.settings[state.controls[c.name]], c.format); };
+    input.value = state.controls[c.name];
+    show();
+    input.addEventListener("input", () => {
+      state.controls[c.name] = +input.value;
+      show();
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(draw);
+    });
+    el.after(row);
+  }
   let pending;
   new ResizeObserver(() => { clearTimeout(pending); pending = setTimeout(draw, 50); }).observe(el);
   // A legend entry's label toggles its group (its traces; its handle and label dim).

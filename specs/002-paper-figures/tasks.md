@@ -93,13 +93,13 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 ## Phase 6: User Story 3 — controls (P2)
 
-- [ ] T027 [P] [US3] Tests for the difference finder: only differing leaves are recorded, values
+- [x] T027 [P] [US3] Tests for the difference finder: only differing leaves are recorded, values
       per setting at 6 significant digits, structure change fails naming the path, the size cap,
       `value` snapped to a setting, in `tests/test_controls.py`
-- [ ] T028 [US3] `src/figpress_plotly/controls.py` (R5); `write_web` packs controls
-- [ ] T029 [US3] Runtime: a slider per control (label, readout), applies the setting's values,
+- [x] T028 [US3] `src/figpress_plotly/controls.py` (R5); `write_web` packs controls
+- [x] T029 [US3] Runtime: a slider per control (label, readout), applies the setting's values,
       clamps a stale index; tests in `tests/runtime.test.mjs`
-- [ ] T030 [US3] Smoke: at the paper's value the page equals the PDF; moving the slider changes
+- [x] T030 [US3] Smoke: at the paper's value the page equals the PDF; moving the slider changes
       only the declared elements; hover follows; a resize keeps the setting
 
 ## Phase 7: User Story 5 — light and dark (P3)
