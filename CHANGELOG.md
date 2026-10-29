@@ -5,6 +5,8 @@ another release the same day.
 
 ## Unreleased
 
+- numpy is a runtime dependency (it was imported but not declared, so a clean install failed).
+
 The library (feature 002): a paper's figure as one `build(target)`.
 
 - `@fp.figure(page, frame | margins, fonts | style, controls)`; sizes in points (`fp.pt`,
