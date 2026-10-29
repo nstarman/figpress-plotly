@@ -20,9 +20,18 @@ jobs:
       - name: Versions agree
         run: python3 scripts/version.py check
       - name: Python tests
-        run: python3 -m unittest discover -s tests -v
-      - name: npm CLI tests
+        run: uv run pytest -v
+      - name: Runtime tests
         run: node --test "tests/*.test.mjs"
+      - name: The example, built and compared with its reference
+        run: |
+          uv run figpress-plotly build examples/bands/figure.py:bands --out build/ --target pdf
+          uv run figpress-plotly compare build/bands.pdf examples/bands/reference.pdf --tol 1 --overlay build/overlay.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: example
+          path: build/
       - name: The Python package builds and imports
         run: |
           uv build
