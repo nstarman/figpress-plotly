@@ -52,3 +52,8 @@ jobs:
         run: uv run playwright install --with-deps chromium
       - name: The web figure in a browser (hover, toggles, resize, offline, overlay at three widths)
         run: uv run pytest -m smoke -v
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke
+          path: build/smoke/

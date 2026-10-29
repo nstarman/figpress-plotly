@@ -4,6 +4,7 @@ and Plotly lays out in whole pixels and snaps hairlines (the 0.7 pt spine is und
 there) to them."""
 
 import io
+from pathlib import Path
 
 import numpy as np
 import pypdfium2 as pdfium
@@ -68,6 +69,11 @@ def test_overlays_the_pdf(open_page, example, factor):
             if paper[rows, cols].std() < 8 or not two_dimensional(paper[rows, cols]):
                 continue  # nothing to match, or only lines along one direction
             dy, dx = shift(web_b[rows, cols], paper_b[rows, cols])
+            if not (abs(dx) / per_pt <= tol and abs(dy) / per_pt <= tol):
+                keep = Path("build/smoke")  # for CI to upload
+                keep.mkdir(parents=True, exist_ok=True)
+                Image.fromarray(np.stack([paper, web, web], -1)).save(keep / f"overlay-{factor}.png")
+                Image.fromarray(np.stack([paper[rows, cols], web[rows, cols], web[rows, cols]], -1)).save(keep / f"block-{factor}-{i}{j}.png")
             assert abs(dx) / per_pt <= tol and abs(dy) / per_pt <= tol, (i, j, dx / per_pt, dy / per_pt)
             checked += 1
     assert checked >= 4
