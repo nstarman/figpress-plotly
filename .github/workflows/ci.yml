@@ -25,7 +25,9 @@ jobs:
         run: node --test "tests/*.test.mjs"
       - name: The example, built and compared with its reference
         run: |
+          start=$SECONDS
           uv run figpress-plotly build examples/bands/figure.py:bands --out build/
+          echo "built in $((SECONDS - start)) s"; test $((SECONDS - start)) -lt 30  # SC-006
           uv run figpress-plotly compare build/bands.pdf examples/bands/reference.pdf --tol 1 --overlay build/overlay.png
           uv run figpress-plotly build examples/native/figure.py:rotation --out build/
       - uses: actions/upload-artifact@v4

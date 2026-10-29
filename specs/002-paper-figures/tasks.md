@@ -111,9 +111,9 @@ checked in CI). Each story's tests come first and fail before its implementation
 
 ## Phase 8: Polish and release
 
-- [ ] T034 [P] README (what it is, a short example, the CLI), AGENTS.md layout, CHANGELOG
+- [x] T034 [P] README (what it is, a short example, the CLI), AGENTS.md layout, CHANGELOG
       `## YYYY.MM.DD`
-- [ ] T035 Example build time < 30 s on CI (SC-006); a control redraw < 100 ms (smoke, measured)
+- [x] T035 Example build time < 30 s on CI (SC-006); a control redraw < 100 ms (smoke, measured)
 - [ ] T036 Release `vYYYY.MM.DD` (`scripts/version.py set`, tag, `release.yml`); check fresh
       installs from PyPI and npm
 - [ ] T037 Outside this repository: port CP1's Paper Figure 7 (SC-003) — the PDF passes

@@ -1,6 +1,7 @@
 """The print figure: Plotly → SVG (Kaleido, the paper's fonts in its page) → PDF printed by Chrome at
 exactly the page size. Kaleido's own PDF adds a margin and cannot use the page's fonts."""
 
+import atexit
 import json
 import subprocess
 import tempfile
@@ -32,12 +33,30 @@ def _font_script(fonts: Fonts, path: Path) -> Path:
     return path
 
 
+_server: dict = {}  # the running Kaleido server: its fonts and its script's directory
+
+
+def _kaleido(fonts: Fonts) -> None:
+    """One Kaleido browser for every figure with these fonts (starting one per figure costs seconds,
+    most of it its shutdown); restarted for other fonts, stopped when Python exits."""
+    if _server.get("fonts") == fonts:
+        return
+    if _server:
+        kaleido.stop_sync_server(silence_warnings=True)
+        _server["tmp"].cleanup()
+    tmp = tempfile.TemporaryDirectory()
+    page = kaleido.PageGenerator(others=[_font_script(fonts, Path(tmp.name) / "fonts.js").as_uri()], mathjax=False)
+    kaleido.start_sync_server(page_generator=page, silence_warnings=True)
+    if not _server:
+        atexit.register(lambda: _server and kaleido.stop_sync_server(silence_warnings=True))
+    _server.update(fonts=fonts, tmp=tmp)
+
+
 def svg(fig: go.Figure, fonts: Fonts) -> str:
+    _kaleido(fonts)
     with tempfile.TemporaryDirectory() as tmp:
-        tmp = Path(tmp)
-        page = kaleido.PageGenerator(others=[_font_script(fonts, tmp / "fonts.js").as_uri()], mathjax=False)
-        out = tmp / "fig.svg"
-        kaleido.write_fig_sync(fig, path=str(out), opts={"format": "svg"}, kopts={"page_generator": page})
+        out = Path(tmp) / "fig.svg"
+        kaleido.write_fig_sync(fig, path=str(out), opts={"format": "svg"})
         return out.read_text(encoding="utf-8")
 
 
@@ -54,9 +73,11 @@ def write_pdf(fig: go.Figure, path: Path, page: tuple[float, float], fonts: Font
         r = subprocess.run([chrome(), "--headless=new", "--disable-gpu", "--no-pdf-header-footer", "--no-sandbox",
                             "--virtual-time-budget=3000", f"--print-to-pdf={path.resolve()}", html.as_uri()],
                            capture_output=True, text=True)
-    if r.returncode or not path.exists():
-        raise RuntimeError(f"Chrome could not print the figure:\n{r.stderr[-2000:]}")
-    _exact_page(path, w, h)
+    # Chrome can fail on its way out after writing the PDF: judge by the PDF, not the exit code.
+    try:
+        _exact_page(path, w, h)
+    except Exception:
+        raise RuntimeError(f"Chrome could not print the figure (exit {r.returncode}):\n{r.stderr[-2000:]}") from None
     return path
 
 
